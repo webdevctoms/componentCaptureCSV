@@ -1,10 +1,13 @@
-function App(dropZoneID,downloadID,testButtonID,filterDropZoneID,filterButtonID) {
+function App(dropZoneID,downloadID,testButtonID,filterDropZoneID,filterButtonID,filterSelectID) {
 	this.csvDropZone = document.getElementById(dropZoneID);
 	this.downloadLink = document.getElementById(downloadID);
 	this.testButton = document.getElementById(testButtonID);
 	this.filterDropZone = document.getElementById(filterDropZoneID);
 	this.filterButton = document.getElementById(filterButtonID);
+	this.filterSelect = document.getElementById(filterSelectID);
 
+	this.componentData;
+	this.componentItemCodes;
 	this.commaSplitData;
 	this.captureComponents;
 	this.captureCSV = new CaptureCSV();
@@ -48,6 +51,8 @@ App.prototype.runTests = function(){
 	console.log("run tests");
 	try{
 		Tests.checkLength(this.commaSplitData,this.commaSplitData[0].length);
+		Tests.checkFilteredData(this.componentData,this.componentItemCodes,this.captureComponents.originalItemCodeIndex);
+
 	}
 	catch(err){
 		console.log("error testing ",err);
@@ -74,6 +79,24 @@ App.prototype.createDownload = function(csvData,downloadLink){
 	downloadLink.setAttribute("download", "new_data.csv");
 };
 
+App.prototype.filterClicked = function(){
+	try{
+		if(this.filterSelect.value === "components"){
+			this.componentData = this.captureComponents.getComponentData();
+			console.log(this.componentData);
+			let csvData = this.createBlob(this.componentData);
+			this.createDownload(csvData,this.downloadLink);
+		}
+		else if(this.filterSelect.value === "kits"){
+			console.log("kits selected");
+		}
+		
+	}
+	catch(err){
+		console.log("error filtering ",err);
+	}
+};
+
 App.prototype.filterFileDropped = function(event){
 	let csvFile = event.dataTransfer.items[0].getAsFile();
 	this.captureCSV.readFile(csvFile)
@@ -82,9 +105,7 @@ App.prototype.filterFileDropped = function(event){
 		try{		
 			this.captureComponents = new CaptureComponents(filterSplitData,"Components");
 			this.captureComponents.setData(this.commaSplitData,"name");
-			this.captureComponents.captureItemCodes();
-			let componentData = this.captureComponents.getComponentData();
-			console.log(componentData);
+			this.componentItemCodes = this.captureComponents.captureItemCodes();
 		}
 		catch(err){
 			console.log("error setting data in filter",err);
@@ -122,5 +143,5 @@ App.prototype.fileDropped = function(event){
 	//console.log(this.commaSplitData);
 };
 
-let app = new App("drop_zone","downloadLink","testData","drop_zone_filter","filterData");
+let app = new App("drop_zone","downloadLink","testData","drop_zone_filter","filterData","filterSelect");
 window.onload = app.initApp();
