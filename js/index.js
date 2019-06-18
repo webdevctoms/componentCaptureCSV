@@ -78,10 +78,17 @@ App.prototype.filterFileDropped = function(event){
 	let csvFile = event.dataTransfer.items[0].getAsFile();
 	this.captureCSV.readFile(csvFile)
 
-	.then(commaSplitData => {
-
-		this.captureComponents = new CaptureComponents(commaSplitData,"Components");
-		this.captureComponents.captureItemCodes();
+	.then(filterSplitData => {
+		try{		
+			this.captureComponents = new CaptureComponents(filterSplitData,"Components");
+			this.captureComponents.setData(this.commaSplitData,"name");
+			this.captureComponents.captureItemCodes();
+			let componentData = this.captureComponents.getComponentData();
+			console.log(componentData);
+		}
+		catch(err){
+			console.log("error setting data in filter",err);
+		}	
 
 	})
 
@@ -98,7 +105,12 @@ App.prototype.fileDropped = function(event){
 	.then(commaSplitData => {
 		this.commaSplitData = commaSplitData;
 		console.log(this.commaSplitData);
-
+		try{
+			this.captureComponents.setData(this.commaSplitData,"name");
+		}
+		catch(err){
+			console.log("error setting data in master",err);
+		}
 		
 		//let csvData = this.createBlob(this.commaSplitData);
 		//this.createDownload(csvData,this.downloadLink);
