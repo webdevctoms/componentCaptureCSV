@@ -7,7 +7,9 @@ function App(dropZoneID,downloadID,testButtonID,filterDropZoneID,filterButtonID,
 	this.filterSelect = document.getElementById(filterSelectID);
 
 	this.componentData;
+	this.componentDataKits;
 	this.componentItemCodes;
+	this.kitItemCodes;
 	this.commaSplitData;
 	this.captureComponents;
 	this.captureCSV = new CaptureCSV();
@@ -52,6 +54,7 @@ App.prototype.runTests = function(){
 	try{
 		Tests.checkLength(this.commaSplitData,this.commaSplitData[0].length);
 		Tests.checkFilteredData(this.componentData,this.componentItemCodes,this.captureComponents.originalItemCodeIndex);
+		Tests.checkFilteredData(this.componentDataKits,this.kitItemCodes,this.captureComponents.originalItemCodeIndex);
 
 	}
 	catch(err){
@@ -82,14 +85,17 @@ App.prototype.createDownload = function(csvData,downloadLink){
 App.prototype.filterClicked = function(){
 	try{
 		if(this.filterSelect.value === "components"){
-			this.componentData = this.captureComponents.getComponentData();
+			this.componentData = this.captureComponents.getComponentData(this.componentItemCodes);
 			console.log(this.componentData);
 			let csvData = this.createBlob(this.componentData);
 			this.createDownload(csvData,this.downloadLink);
 		}
 		else if(this.filterSelect.value === "kits"){
 			console.log("kits selected");
-		}
+			this.componentDataKits = this.captureComponents.getComponentData(this.kitItemCodes);
+			console.log(this.componentDataKits);
+			let csvData = this.createBlob(this.componentDataKits);
+			this.createDownload(csvData,this.downloadLink);		}
 		
 	}
 	catch(err){
@@ -103,9 +109,10 @@ App.prototype.filterFileDropped = function(event){
 
 	.then(filterSplitData => {
 		try{		
-			this.captureComponents = new CaptureComponents(filterSplitData,"Components");
+			this.captureComponents = new CaptureComponents(filterSplitData,"Components","name");
 			this.captureComponents.setData(this.commaSplitData,"name");
 			this.componentItemCodes = this.captureComponents.captureItemCodes();
+			this.kitItemCodes = this.captureComponents.captureItemCodesKits();
 		}
 		catch(err){
 			console.log("error setting data in filter",err);

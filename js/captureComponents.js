@@ -1,10 +1,12 @@
-function CaptureComponents(commaSplitArr,componentIdentifier){
+function CaptureComponents(commaSplitArr,componentIdentifier,kitIdentifier){
 	this.kitArrayData = commaSplitArr;
 	this.originalData;
 	this.originalItemCodeIndex;
 	this.itemCodeData;
+	this.itemCodeDataKits;
 	this.componentsIndex = this.getIndex(this.kitArrayData,componentIdentifier);
-	console.log(this.componentsIndex);
+	this.kitIndex = this.getIndex(this.kitArrayData,kitIdentifier)
+;	console.log(this.componentsIndex);
 }
 
 CaptureComponents.prototype.setData = function(data,itemCodeIdentifier) {
@@ -47,27 +49,37 @@ CaptureComponents.prototype.captureItemCodes = function(){
 	return itemCodeData;
 };
 
-CaptureComponents.prototype.getComponentData = function() {
+CaptureComponents.prototype.captureItemCodesKits = function(){
+	let itemCodeData = {};
+
+	for(let i = 1; i < this.kitArrayData.length;i++){
+		let itemCode = this.kitArrayData[i][this.kitIndex].replace(",","").trim();
+		if(!itemCodeData[itemCode]){
+			itemCodeData[itemCode] = itemCode;
+		}
+	}
+	console.log("item codes kits: ",itemCodeData,Object.keys(itemCodeData).length);
+	this.itemCodeDataKits = itemCodeData;
+	return itemCodeData;
+};
+
+CaptureComponents.prototype.getComponentData = function(itemCodeData) {
 	let componentData = [];
 	componentData.push(this.originalData[0]);
 	let parentItemCode = "";
 	for(let i = 1;i < this.originalData.length;i++){
 		let itemCode = this.originalData[i][this.originalItemCodeIndex].replace(",","").trim();
-		/*
-		if(itemCode === "35Z-GTSR"){
-			console.log(itemCode,this.itemCodeData[itemCode]);
-		}
-		*/
+
 		//new Item
-		if(this.itemCodeData[itemCode] && !itemCode.includes(parentItemCode)){
+		if(itemCodeData[itemCode] && !itemCode.includes(parentItemCode)){
 			parentItemCode = itemCode;
 			componentData.push(this.originalData[i]);
 		}
 		//child item
-		else if(this.itemCodeData[parentItemCode] && itemCode.includes(parentItemCode)){
+		else if(itemCodeData[parentItemCode] && itemCode.includes(parentItemCode)){
 			componentData.push(this.originalData[i]);
 		}
-		else if(this.itemCodeData[itemCode]){
+		else if(itemCodeData[itemCode]){
 			parentItemCode = itemCode;
 			componentData.push(this.originalData[i]);
 		}
